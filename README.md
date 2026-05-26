@@ -12,7 +12,7 @@ Keyboard shortcut: press `Alt+T` to summon the search omnibar.
 
 ## Install the clarity
 
-- Firefox Add-ons: [addons.mozilla.org/en-US/firefox/addon/zen-tab-search](https://addons.mozilla.org/en-US/firefox/addon/zen-tab-search/)
+- Firefox Add-ons: TBD
 - GitHub: [https://github.com/AntonDobrovinskiy/Zen-Tab-Search](https://github.com/AntonDobrovinskiy/Zen-Tab-Search)
 
 ## Features (short, like your patience for tab chaos)
