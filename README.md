@@ -1,3 +1,5 @@
+![](https://github.com/AntonDobrovinskiy/Zen-Tab-Search/blob/main/Screenshot%202025-09-07%20at%2000.46.40.png?raw=true)
+
 # Zen Tab Search
 
 Tabs everywhere? Breathe in, breathe out — and let Zen Tab Search find the one you actually need.
