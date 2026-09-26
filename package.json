@@ -1,0 +1,11 @@
+{
+  "name": "search-tabs-tab-search",
+  "version": "1.0.0",
+  "description": "- Fuzzy search through your open tabs. - If no tab is found, it opens a new search on duckduckgo - Finds what you mean, not just what you type.",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "web-ext": "10.7.0"
+  }
+}

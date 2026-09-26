@@ -168,26 +168,26 @@ function appendHighlightedText(parentElement, text, query) {
 }
 
 function showOmnibar() {
-  if (document.getElementById("zen-tab-omnibar-overlay")) return;
+  if (document.getElementById("search-tabs-tab-omnibar-overlay")) return;
 
   const overlay = document.createElement("div");
-  overlay.id = "zen-tab-omnibar-overlay";
-  overlay.className = "zen-overlay";
+  overlay.id = "search-tabs-tab-omnibar-overlay";
+  overlay.className = "search-tabs-overlay";
 
   const omnibar = document.createElement("div");
-  omnibar.className = "zen-omnibar";
+  omnibar.className = "search-tabs-omnibar";
 
   const input = document.createElement("input");
   input.type = "text";
   input.placeholder = "Search open tabs ...";
-  input.className = "zen-input";
+  input.className = "search-tabs-input";
   input.autofocus = true;
 
   const countEl = document.createElement("div");
-  countEl.className = "zen-count";
+  countEl.className = "search-tabs-count";
 
   const list = document.createElement("ul");
-  list.className = "zen-list";
+  list.className = "search-tabs-list";
 
   omnibar.appendChild(input);
   omnibar.appendChild(countEl);
@@ -221,7 +221,7 @@ function showOmnibar() {
 
     if (filteredTabs.length === 0) {
       const empty = document.createElement("li");
-      empty.className = "zen-empty";
+      empty.className = "search-tabs-empty";
       empty.textContent = "No tabs found";
       list.appendChild(empty);
       return;
@@ -229,19 +229,19 @@ function showOmnibar() {
 
     filteredTabs.slice(0, MAX_TABS_TO_RENDER).forEach((tab, index) => {
       const li = document.createElement("li");
-      li.className = "zen-tab-item";
+      li.className = "search-tabs-tab-item";
       li.dataset.tabId = tab.id;
       if (tab.url) li.dataset.url = tab.url;
 
       const favIcon = document.createElement("div");
-      favIcon.className = "zen-favicon";
+      favIcon.className = "search-tabs-favicon";
       const img = document.createElement("img");
       img.src = tab.favIconUrl && tab.favIconUrl.trim() ? tab.favIconUrl : browser.runtime.getURL("icons/default-favicon.svg");
       favIcon.appendChild(img);
       li.appendChild(favIcon);
 
       const title = document.createElement("span");
-      title.className = "zen-title";
+      title.className = "search-tabs-title";
       appendHighlightedText(title, tab.title || "Untitled", query);
       li.appendChild(title);
 
@@ -251,13 +251,13 @@ function showOmnibar() {
       } catch {
         url.textContent = "No URL";
       }
-      url.className = "zen-url";
+      url.className = "search-tabs-url";
       li.appendChild(url);
 
       if (tab.groupTitle) {
         const group = document.createElement("span");
         group.textContent = tab.groupTitle;
-        group.className = "zen-group-badge";
+        group.className = "search-tabs-group-badge";
         if (tab.groupColor) {
           group.dataset.groupColor = tab.groupColor;
         }
@@ -265,7 +265,7 @@ function showOmnibar() {
       }
 
       const closeBtn = document.createElement("span");
-      closeBtn.className = "zen-close-btn";
+      closeBtn.className = "search-tabs-close-btn";
       closeBtn.textContent = "×";
       closeBtn.title = "Close tab";
       li.appendChild(closeBtn);
@@ -310,7 +310,7 @@ function showOmnibar() {
     if (filtered.length === 0) {
       filtered.push({
         id: "search-ddg", // Special ID to catch in your click handler
-        title: `Search DuckDuckGo for "${query}"`,
+        title: `Search on DuckDuckGo for "${query}"`,
         url: `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
         favIconUrl: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%2Fid%2FOIP.ChtUuaJk4hbc_eiBtWl4CgHaHa%3Fpid%3DApi&f=1&ipt=6cf1b88646280ccd26f3d111a915f40c8e275c29220113a2b6330b7581688923&ipo=images",
         openNew: true,
@@ -347,7 +347,7 @@ function showOmnibar() {
   }
 
   function closeOmnibar() {
-    const overlay = document.getElementById("zen-tab-omnibar-overlay");
+    const overlay = document.getElementById("search-tabs-tab-omnibar-overlay");
     if (overlay) {
       overlay.remove();
       document.removeEventListener("keydown", escListener);
