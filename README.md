@@ -1,21 +1,13 @@
-![](https://github.com/AntonDobrovinskiy/Zen-Tab-Search/blob/main/Screenshot%202025-09-07%20at%2000.46.40.png?raw=true)
-
-# Zen Tab Search
-
-Tabs everywhere? Breathe in, breathe out — and let Zen Tab Search find the one you actually need.
+# Firefox Tab Search
 
 ## What it does
 
-- Fuzzy search through your tabs like a ninja with good memory.
+- Fuzzy search through your open tabs.
+- If no tab is found, it opens a new search on duckduckgo
 - Finds what you mean, not just what you type.
-- Highlights matches because we're not barbarians.
 
-Keyboard shortcut: press `Alt+T` to summon the search omnibar.
+Keyboard shortcut: press `Ctrl+Space` to open search.
 
-## Install the clarity
-
-- Firefox Add-ons: TBD
-- GitHub: [https://github.com/AntonDobrovinskiy/Zen-Tab-Search](https://github.com/AntonDobrovinskiy/Zen-Tab-Search)
 
 ## Features (short, like your patience for tab chaos)
 
@@ -24,16 +16,16 @@ Keyboard shortcut: press `Alt+T` to summon the search omnibar.
 - **Match highlighting**: See exactly what matched.
 - **Lightweight**: No memory hoarding, no drama.
 - **Keyboard first**: Tab through life efficiently.
+- **OpenSource**
 
 ## Keyboard shortcuts
 
 | Key | Action |
 |-----|--------|
-| `Alt+T` | Open search |
+| `Ctrl+Space` | Open search |
 | `↑/↓` | Navigate results |
 | `←/→` | Jump 10 items |
 | `Enter` | Switch to tab |
-| `Cmd/Ctrl+Enter` | Open in new tab |
 | `Esc` | Close search |
 
 ## Contribute
@@ -41,9 +33,4 @@ Keyboard shortcut: press `Alt+T` to summon the search omnibar.
 Bugs, ideas, or a burning desire to find tabs by humming? Issues and PRs welcome.
 
 ## License
-
 MIT. Find tabs, achieve inner peace.
-
----
-
-P.S. Only shows tabs from your current window. Because sometimes you need focus, not all 347 tabs at once.

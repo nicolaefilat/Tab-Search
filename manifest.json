@@ -1,34 +1,48 @@
 {
   "manifest_version": 2,
-  "name": "Zen Tab Search",
-  "version": "1.95",
-  "description": "Fuzzy search for tabs in Zen Browser with a modern omnibar overlay",
-  "permissions": ["tabs", "<all_urls>", "tabGroups"],
+  "name": "Tab Search",
+  "version": "1",
+  "description": "Fuzzy search for tabs in Firefox Browsers with a modern omnibar overlay",
+  "permissions": [
+    "tabs",
+    "<all_urls>",
+    "tabGroups"
+  ],
   "commands": {
     "show-omnibar": {
       "suggested_key": {
-        "default": "Alt+T",
-        "mac": "MacCtrl+T"
+        "default": "Ctrl+Space",
+        "mac": "Command+Space"
       },
       "description": "Open tab search omnibar"
     }
   },
   "background": {
-    "scripts": ["background.js"],
+    "scripts": [
+      "background.js"
+    ],
     "persistent": false
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
-      "css": ["content.css"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
       "run_at": "document_end"
     }
   ],
-  "web_accessible_resources": ["icons/default-favicon.svg"],
+  "web_accessible_resources": [
+    "icons/default-favicon.svg"
+  ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "zen-tab-search@extension.example",
+      "id": "tab-search@extension.example",
       "strict_min_version": "78.0"
     }
   },

@@ -20,17 +20,17 @@
 @media (prefers-color-scheme: light) {
   :root {
     --zen-bg-overlay: rgba(0, 0, 0, 0.4);
-    --zen-bg-omnibar: linear-gradient(135deg, #f5f5f5, #e8e8e8);
-    --zen-bg-input: #e0e0e0;
-    --zen-bg-item-hover: rgba(0, 0, 0, 0.08);
-    --zen-bg-item-selected: rgba(0, 0, 0, 0.12);
+    --zen-bg-omnibar: white;
+    --zen-bg-input: #f5f5f5;
+    --zen-bg-item-hover: #f5f5f5;
+    --zen-bg-item-selected: #e5e5e5;
     --zen-text-primary: #1a1a1a;
     --zen-text-secondary: #666;
     --zen-text-muted: #999;
     --zen-text-highlight: #0288d1;
     --zen-close-color: #888;
     --zen-close-hover: #333;
-    --zen-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    --zen-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     --zen-scrollbar: #ccc;
     --zen-scrollbar-hover: #aaa;
   }
@@ -42,12 +42,9 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: var(--zen-bg-overlay);
-  backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding-top: 10vh;
+  align-items: center;
   z-index: 999999;
   animation: zenFadeIn 0.2s ease-out;
 }
@@ -56,10 +53,9 @@
   background: var(--zen-bg-omnibar);
   border-radius: 16px;
   box-shadow: var(--zen-shadow);
-  width: 60vw;
-  max-width: 600px;
-  min-height: 60px;
-  max-height: 60vh;
+  width: 30%;
+  height: 27%;
+  /* Have fixed height */
   display: flex;
   flex-direction: column;
   padding: 16px;
@@ -293,6 +289,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

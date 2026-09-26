@@ -1,73 +1,148 @@
 /*
- * Zen Tab Search - Content Script
+ * Tab Search - Content Script
  * Fuzzy search with highlighting, debounce, and keyboard shortcuts.
  */
 
-/* Fuzzy matching: chars must appear in order */
-function fuzzyMatch(str, query) {
-  str = str.toLowerCase();
-  query = query.toLowerCase();
-  let i = 0;
-  for (const char of query) {
-    i = str.indexOf(char, i);
-    if (i === -1) return false;
-    i++;
+// DP implementation of Levenshtein Minimum Edit Distance
+function minEditDistance(s1, s2) {
+  if (!s1.length) return s2.length;
+  if (!s2.length) return s1.length;
+
+  const dp = Array.from({ length: s1.length + 1 }, () => Array(s2.length + 1).fill(0));
+
+  for (let i = 0; i <= s1.length; i++) dp[i][0] = i;
+  for (let j = 0; j <= s2.length; j++) dp[0][j] = j;
+
+  for (let i = 1; i <= s1.length; i++) {
+    for (let j = 1; j <= s2.length; j++) {
+      const cost = s1[i - 1] === s2[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1,       // deletion
+        dp[i][j - 1] + 1,       // insertion
+        dp[i - 1][j - 1] + cost // substitution
+      );
+    }
   }
-  return true;
+  return dp[s1.length][s2.length];
 }
 
-/* Calculate match score: more matching chars = higher score */
+function getBestWordScore(queryWord, targetString) {
+  const words = targetString.toLowerCase().split(/[\s/\-_.]+/);
+  let minDistance = Infinity;
+
+  for (const word of words) {
+    // 1. Check prefix BEFORE length optimization!
+    // This ensures short queries like "wh" still match long words like "whatsapp".
+    if (word.startsWith(queryWord)) return 100;
+
+    // 2. Now apply optimization: skip heavy DP calculation for vastly different lengths
+    if (Math.abs(word.length - queryWord.length) > 5) continue;
+
+    const distance = minEditDistance(queryWord, word);
+    if (distance < minDistance) {
+      minDistance = distance;
+    }
+  }
+
+  let maxAllowedTypos = 0;
+  if (queryWord.length >= 6) maxAllowedTypos = 3;
+  else if (queryWord.length >= 4) maxAllowedTypos = 1;
+
+  if (minDistance > maxAllowedTypos) return 0;
+
+  if (minDistance === 0) return 100;
+  if (minDistance === 1) return 80;
+  if (minDistance === 2) return 50;
+
+  return 0;
+}
+
 function calculateScore(tab, query) {
   const title = (tab.title || "").toLowerCase();
   const url = (tab.url || "").toLowerCase();
-  const groupTitle = (tab.groupTitle || "").toLowerCase();
-  const queryLower = query.toLowerCase();
 
-  let score = 0;
+  // Safely extract the hostname (domain)
+  let hostname = "";
+  try {
+    hostname = new URL(tab.url).hostname.toLowerCase();
+  } catch (e) {
+    // Failsafe for internal browser pages like about:debugging
+    hostname = "";
+  }
 
-  // Exact prefix match (highest)
-  if (title.startsWith(queryLower)) score += 100;
-  if (url.startsWith(queryLower)) score += 90;
-  if (groupTitle.startsWith(queryLower)) score += 80;
+  const queryLower = query.toLowerCase().trim();
+  let totalScore = 0;
+  let isExactPhraseMatch = false;
 
-  // Contains query
-  if (title.includes(queryLower)) score += 50;
-  if (url.includes(queryLower)) score += 40;
-  if (groupTitle.includes(queryLower)) score += 35;
+  // 1. Exact phrase bonus (Hostname gets absolute priority)
+  if (hostname.includes(queryLower)) {
+    totalScore += 1000; // Massive bonus for domain matches
+    isExactPhraseMatch = true;
+  } else if (url.includes(queryLower)) {
+    totalScore += 500; // Normal URL match
+    isExactPhraseMatch = true;
+  }
 
-  // Fuzzy match bonus
-  if (fuzzyMatch(title, query)) score += 30;
-  if (fuzzyMatch(url, query)) score += 20;
-  if (fuzzyMatch(groupTitle, query)) score += 15;
+  if (title.includes(queryLower)) {
+    totalScore += 300;
+    isExactPhraseMatch = true;
+  }
 
-  // Word-by-word match (higher score = more words match)
-  const queryWords = queryLower.split(/\s+/);
-  const titleWords = title.split(/\s+/);
-  const urlWords = url.split(/\s+/);
-  const groupWords = groupTitle.split(/\s+/);
+  // 2. Word-by-word matching
+  const queryWords = queryLower.split(/\s+/).filter(w => w.length > 0);
+  const stopWords = new Set(["in", "a", "an", "the", "of", "to", "and", "for", "on", "with", "is", "how"]);
 
-  let matchedWords = 0;
+  const meaningfulQueryWords = queryWords.filter(w => !stopWords.has(w));
+  let meaningfulMatchedCount = 0;
+
   for (const qw of queryWords) {
-    if (qw.length < 2) continue;
-    if (
-      titleWords.some((tw) => tw.includes(qw)) ||
-      urlWords.some((uw) => uw.includes(qw)) ||
-      groupWords.some((gw) => gw.includes(qw))
-    ) {
-      matchedWords++;
+    const scoreTitle = getBestWordScore(qw, title);
+    const scoreUrl = getBestWordScore(qw, url) * 1.5;
+
+    // Multiply hostname score by 2.5 so it beats both URL paths and titles
+    const scoreHostname = getBestWordScore(qw, hostname) * 2.5;
+
+    const bestWordScore = Math.max(scoreHostname, scoreUrl, scoreTitle);
+
+    if (bestWordScore > 0) {
+      if (stopWords.has(qw)) {
+        totalScore += Math.floor(bestWordScore * 0.1);
+      } else {
+        totalScore += bestWordScore;
+        meaningfulMatchedCount++;
+      }
     }
   }
-  score += matchedWords * 10;
 
-  return score;
+  // 3. Modifiers and Penalties
+  if (meaningfulQueryWords.length > 0) {
+    if (meaningfulMatchedCount === 0 && !isExactPhraseMatch) {
+      return 0;
+    }
+
+    if (meaningfulQueryWords.length > 1) {
+      if (meaningfulMatchedCount === meaningfulQueryWords.length) {
+        totalScore *= 2;
+      } else if (!isExactPhraseMatch) {
+        // NEW HARSH PENALTY: Halve the score for EVERY missing word
+        const missingWords = meaningfulQueryWords.length - meaningfulMatchedCount;
+        totalScore = Math.floor(totalScore / Math.pow(2, missingWords));
+      }
+    }
+  } else if (queryWords.length > 0 && meaningfulQueryWords.length === 0) {
+    totalScore = Math.floor(totalScore / 2);
+  }
+
+  return totalScore;
 }
-
 /* Highlight matched characters in text */
 function highlightText(text, query) {
   if (!query) return text;
   const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
   return text.replace(regex, "<mark>$1</mark>");
 }
+
+const MAX_TABS_TO_RENDER = 10;
 
 function showOmnibar() {
   if (document.getElementById("zen-tab-omnibar-overlay")) return;
@@ -100,7 +175,10 @@ function showOmnibar() {
   input.focus();
 
   let allTabs = [];
-  let selectedIndex = -1;
+  // selectedIndex = 0 -> first tab in focus will always be selected
+  let selectedIndex = 0;
+  // update selection based on the first index
+
   let escListener, visibilityListener;
 
   /* Fetch tabs with current window filter */
@@ -126,10 +204,11 @@ function showOmnibar() {
       return;
     }
 
-    filteredTabs.forEach((tab, index) => {
+    filteredTabs.slice(0, MAX_TABS_TO_RENDER).forEach((tab, index) => {
       const li = document.createElement("li");
       li.className = "zen-tab-item";
       li.dataset.tabId = tab.id;
+      if (tab.url) li.dataset.url = tab.url;
 
       const favIcon = document.createElement("div");
       favIcon.className = "zen-favicon";
@@ -169,7 +248,12 @@ function showOmnibar() {
       li.appendChild(closeBtn);
 
       li.addEventListener("click", () => {
-        switchToTab(tab.id);
+        if (tab.id === "search-ddg") {
+          window.open(tab.url, "_blank"); // Open DDG natively
+          closeOmnibar();
+        } else {
+          switchToTab(tab.id);
+        }
       });
 
       closeBtn.addEventListener("click", (e) => {
@@ -182,6 +266,8 @@ function showOmnibar() {
 
       list.appendChild(li);
     });
+    // update selection after rendering all tabs
+    updateSelection();
   }
 
   function applyFilter(query) {
@@ -190,12 +276,23 @@ function showOmnibar() {
       return;
     }
 
+    // 1. Filter out bad matches
     const filtered = allTabs
       .map((tab) => ({ tab, score: calculateScore(tab, query) }))
-      .filter(({ score }) => score > 0)
+      .filter(tab => tab.score >= (query.trim().split(/\s+/).length * 25))
       .sort((a, b) => b.score - a.score)
       .map(({ tab }) => tab);
 
+    // 2. DuckDuckGo Fallback Trigger
+    if (filtered.length === 0) {
+      filtered.push({
+        id: "search-ddg", // Special ID to catch in your click handler
+        title: `Search DuckDuckGo for "${query}"`,
+        url: `https://duckduckgo.com/?q=${encodeURIComponent(query)}`,
+        favIconUrl: "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%2Fid%2FOIP.ChtUuaJk4hbc_eiBtWl4CgHaHa%3Fpid%3DApi&f=1&ipt=6cf1b88646280ccd26f3d111a915f40c8e275c29220113a2b6330b7581688923&ipo=images",
+        openNew: true,
+      });
+    }
     renderTabs(filtered, query);
   }
 
@@ -254,10 +351,12 @@ function showOmnibar() {
   input.addEventListener("input", (e) => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
-      selectedIndex = -1;
+      selectedIndex = 0;
+      updateSelection();
       applyFilter(e.target.value);
     }, 50);
   });
+
 
   // Keyboard navigation
   input.addEventListener("keydown", (e) => {
@@ -281,17 +380,19 @@ function showOmnibar() {
       updateSelection();
       e.preventDefault();
     } else if (e.key === "Enter") {
-      if (e.metaKey || e.ctrlKey) {
-        // Open in new tab
-        const selectedItem = list.querySelector("li.selected");
-        if (selectedItem) {
-          const tabId = parseInt(selectedItem.dataset.tabId, 10);
-          switchToTab(tabId, true);
-        }
-      } else if (selectedIndex >= 0 && numItems > 0) {
+      if (selectedIndex >= 0 && numItems > 0) {
         const selectedItem = items[selectedIndex];
-        const tabId = parseInt(selectedItem.dataset.tabId, 10);
-        switchToTab(tabId);
+        const rawId = selectedItem.dataset.tabId;
+
+        if (rawId === "search-ddg") {
+          // Handle DuckDuckGo fallback
+          window.open(selectedItem.dataset.url, "_blank");
+          closeOmnibar();
+        } else {
+          // Handle standard tab switching
+          const tabId = parseInt(rawId, 10);
+          switchToTab(tabId, e.metaKey || e.ctrlKey);
+        }
       }
       e.preventDefault();
     }
