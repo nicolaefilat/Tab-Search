@@ -135,14 +135,37 @@ function calculateScore(tab, query) {
 
   return totalScore;
 }
-/* Highlight matched characters in text */
-function highlightText(text, query) {
-  if (!query) return text;
-  const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
-  return text.replace(regex, "<mark>$1</mark>");
-}
+
 
 const MAX_TABS_TO_RENDER = 10;
+
+
+/* Highlight matched characters in text */
+/* Safely append text with highlighted matches using DOM nodes */
+function appendHighlightedText(parentElement, text, query) {
+  if (!query) {
+    parentElement.textContent = text;
+    return;
+  }
+
+  // Escape regex characters
+  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // Split the string using a capture group so the matched parts are included in the array
+  const regex = new RegExp(`(${escapedQuery})`, "gi");
+  const parts = text.split(regex);
+
+  for (const part of parts) {
+    if (!part) continue;
+
+    if (part.toLowerCase() === query.toLowerCase()) {
+      const mark = document.createElement("mark");
+      mark.textContent = part; // Safely set text inside <mark>
+      parentElement.appendChild(mark);
+    } else {
+      parentElement.appendChild(document.createTextNode(part)); // Safely append normal text
+    }
+  }
+}
 
 function showOmnibar() {
   if (document.getElementById("zen-tab-omnibar-overlay")) return;
@@ -156,7 +179,7 @@ function showOmnibar() {
 
   const input = document.createElement("input");
   input.type = "text";
-  input.placeholder = "Search tabs...";
+  input.placeholder = "Search open tabs ...";
   input.className = "zen-input";
   input.autofocus = true;
 
@@ -193,7 +216,7 @@ function showOmnibar() {
     });
 
   function renderTabs(filteredTabs, query = "") {
-    list.innerHTML = "";
+    list.replaceChildren();
     countEl.textContent = `${filteredTabs.length} of ${allTabs.length} tabs`;
 
     if (filteredTabs.length === 0) {
@@ -218,8 +241,8 @@ function showOmnibar() {
       li.appendChild(favIcon);
 
       const title = document.createElement("span");
-      title.innerHTML = highlightText(tab.title || "Untitled", query);
       title.className = "zen-title";
+      appendHighlightedText(title, tab.title || "Untitled", query);
       li.appendChild(title);
 
       const url = document.createElement("span");
@@ -243,7 +266,7 @@ function showOmnibar() {
 
       const closeBtn = document.createElement("span");
       closeBtn.className = "zen-close-btn";
-      closeBtn.innerHTML = "×";
+      closeBtn.textContent = "×";
       closeBtn.title = "Close tab";
       li.appendChild(closeBtn);
 
