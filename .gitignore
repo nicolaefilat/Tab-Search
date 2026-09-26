@@ -1,4 +1,5 @@
 .DS_Store
 node_modules
-web_ext-artifacts
+web-ext-artifacts
+build.sh
 .amo-upload-uuid

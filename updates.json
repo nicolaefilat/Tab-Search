@@ -5,6 +5,10 @@
                 {
                     "version": "1.0.1",
                     "update_link": "https://github.com/nicolaefilat/Tab-Search/releases/download/tab-search-test-auto-updates/tab-search-1.0.1.xpi"
+                },
+                {
+                    "version": "1.0.2",
+                    "update_link": "https://github.com/nicolaefilat/Tab-Search/releases/download/tab-search-v1.0.2/tab-search-v1.0.2.xpi"
                 }
             ]
         }
