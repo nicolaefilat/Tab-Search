@@ -137,8 +137,6 @@ function calculateScore(tab, query) {
 }
 
 
-const MAX_TABS_TO_RENDER = 10;
-
 
 /* Highlight matched characters in text */
 /* Safely append text with highlighted matches using DOM nodes */
@@ -227,7 +225,7 @@ function showOmnibar() {
       return;
     }
 
-    filteredTabs.slice(0, MAX_TABS_TO_RENDER).forEach((tab, index) => {
+    filteredTabs.forEach((tab, index) => {
       const li = document.createElement("li");
       li.className = "search-tabs-tab-item";
       li.dataset.tabId = tab.id;
