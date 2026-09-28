@@ -9,6 +9,10 @@
                 {
                     "version": "1.0.2",
                     "update_link": "https://github.com/nicolaefilat/Tab-Search/releases/download/tab-search-v1.0.2/tab-search-v1.0.2.xpi"
+                },
+                {
+                    "version": "1.0.3",
+                    "update_link": "https://github.com/nicolaefilat/Tab-Search/releases/download/tab-search-v1.0.3/tab-search-v1.0.3.xpi"
                 }
             ]
         }
