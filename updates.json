@@ -13,6 +13,18 @@
                 {
                     "version": "1.0.3",
                     "update_link": "https://github.com/nicolaefilat/Tab-Search/releases/download/tab-search-v1.0.3/tab-search-v1.0.3.xpi"
+                },
+                {
+                    "version": "1.0.4",
+                    "update_link": "https://github.com/nicolaefilat/Tab-Search/releases/download/v1.0.4/tab-search-1.0.4.xpi"
+                },
+                {
+                    "version": "1.0.4",
+                    "update_link": "https://github.com/nicolaefilat/Tab-Search/releases/download/v1.0.4/tab-search-1.0.4.xpi"
+                },
+                {
+                    "version": "1.0.5",
+                    "update_link": "https://github.com/nicolaefilat/Tab-Search/releases/download/v1.0.5/tab-search-1.0.5.xpi"
                 }
             ]
         }

@@ -3,17 +3,48 @@
 
 // Command listener
 browser.commands.onCommand.addListener(async (command) => {
-  /* console.log("Command received:", command); */
   if (command === "show-omnibar") {
     try {
       const tabs = await browser.tabs.query({ active: true, currentWindow: true });
-      if (tabs[0] && Number.isInteger(tabs[0].id) && tabs[0].id >= 0) {
-        await browser.tabs.sendMessage(tabs[0].id, { type: "showOmnibar" });
-      } else {
-        console.error("No valid active tab found");
+      const activeTab = tabs[0];
+
+      if (!activeTab || !Number.isInteger(activeTab.id) || activeTab.id < 0) {
+        return;
+      }
+
+      // Skip internal browser pages where content scripts are restricted
+      if (
+        !activeTab.url ||
+        activeTab.url.startsWith("about:") ||
+        activeTab.url.startsWith("moz-extension:") ||
+        activeTab.url.includes("addons.mozilla.org")
+      ) {
+        return;
+      }
+
+      try {
+        // Attempt regular message delivery
+        await browser.tabs.sendMessage(activeTab.id, { type: "showOmnibar" });
+      } catch (err) {
+        // If content.js is not present on an older or unrefreshed tab, inject it on demand
+        if (err.message && err.message.includes("Receiving end does not exist")) {
+          await browser.scripting.insertCSS({
+            target: { tabId: activeTab.id },
+            files: ["content.css"]
+          });
+          await browser.scripting.executeScript({
+            target: { tabId: activeTab.id },
+            files: ["content.js"]
+          });
+          
+          // Re-send the message now that the script is alive
+          await browser.tabs.sendMessage(activeTab.id, { type: "showOmnibar" });
+        } else {
+          throw err;
+        }
       }
     } catch (error) {
-      console.error("Error sending showOmnibar message:", error);
+      console.error("Error executing showOmnibar:", error);
     }
   }
 });
